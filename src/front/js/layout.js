@@ -1,47 +1,77 @@
 import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import ScrollToTop from "./component/scrollToTop";
-import { BackendURL } from "./component/backendURL";
-import injectContext from "./store/appContext";
-import Home  from "./pages/home";
-
-import  Products  from "./pages/products";
-import  Inventory  from "./pages/inventory";
-import  Invoices  from "./pages/invoices";
-import Dashboard  from "./pages/dashboard";
-
-import{Context} from "./store/appContext";
-
-import  Navbar  from "./component/navbar";
+import injectContext from "./store/appContext"; // Context for global state
+import Home from "./pages/Home";
+import AboutUs from "./pages/AboutUs";
+import Shop from "./pages/Shop";
+import Deals from "./pages/Deals";
+import ContactUs from "./pages/ContactUs";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Dashboard from "./pages/Dashboard";
+import Products from "./pages/Products";
+import Inventory from "./pages/Inventory";
+import Invoices from "./pages/Invoices";
+import Stores from "./pages/Stores";
+import Suppliers from "./pages/Suppliers";
+import Orders from "./pages/Orders";
+import CartManagement from "./pages/CartManagement";
+import Users from "./pages/Users";
+import Analytics from "./pages/Analytics";
+import Reports from "./pages/Reports";
+import BarcodeScanner from "./pages/BarcodeScanner";
+import Navbar from "./component/Navbar";
+import Sidebar from "./component/Sidebar";
 import { Footer } from "./component/footer";
-import RegisterForm from "./pages/register";
 
-//create your first component
 const Layout = () => {
-    //the basename is used when your project is published in a subdirectory and not in the root of the domain
-    // you can set the basename on the .env file located at the root of this project, E.g: BASENAME=/react-hello-webapp/
     const basename = process.env.BASENAME || "";
 
-    if(!process.env.BACKEND_URL || process.env.BACKEND_URL == "") return <BackendURL/ >;
-
     return (
-        <div>
-            <BrowserRouter basename={basename}>
-                <ScrollToTop>
-                    <Navbar />
-                    <Routes>
-                        <Route element={<Home />} path="/" />
-                        <Route element={<RegisterForm />} path="/register" />
-                        <Route element={<Products />} path="/products" />
-                        <Route element={<Inventory />} path="/inventory" />
-                        <Route element={<Invoices />} path="/invoices" />
-                        <Route element={<Dashboard />} path="/dashboard" />
-                        <Route element={<h1>Not found!</h1>} />
-                    </Routes>
-                    <Footer />
-                </ScrollToTop>
-            </BrowserRouter>
-        </div>
+        <BrowserRouter basename={basename}>
+            <ScrollToTop>
+                {/* Navbar */}
+                <Navbar />
+                
+                <div className="d-flex">
+                    <Sidebar />
+                    <div className="flex-grow-1 p-3">
+
+                        <Routes>
+                            {/* Public Routes */}
+                            <Route path="/" element={<Home />} />
+                            <Route path="/about-us" element={<AboutUs />} />
+                            <Route path="/shop" element={<Shop />} />
+                            <Route path="/deals" element={<Deals />} />
+                            <Route path="/contact-us" element={<ContactUs />} />
+                            <Route path="/login" element={<Login />} />
+                            <Route path="/signup" element={<Signup />} />
+
+                            {/* Protected Routes */}
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/products" element={<Products />} />
+                            <Route path="/inventory" element={<Inventory />} />
+                            <Route path="/invoices" element={<Invoices />} />
+                            <Route path="/stores" element={<Stores />} />
+                            <Route path="/suppliers" element={<Suppliers />} />
+                            <Route path="/orders" element={<Orders />} />
+                            <Route path="/cart-management" element={<CartManagement />} />
+                            <Route path="/users" element={<Users />} />
+                            <Route path="/analytics" element={<Analytics />} />
+                            <Route path="/reports" element={<Reports />} />
+                            <Route path="/barcode-scanner" element={<BarcodeScanner />} />
+
+                            {/* Fallback Route */}
+                            <Route path="*" element={<h1>Page Not Found</h1>} />
+                        </Routes>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <Footer />
+            </ScrollToTop>
+        </BrowserRouter>
     );
 };
 

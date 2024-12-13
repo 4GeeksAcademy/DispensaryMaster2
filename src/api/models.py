@@ -12,14 +12,18 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password = db.Column(db.String(256), nullable=False)  # Store hashed passwords
-    plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"), nullable=False)  # basic, pro, enterprise
+    plan_id = db.Column(db.Integer, db.ForeignKey("plan.id"), nullable=True)  # basic, pro, enterprise
     is_active = db.Column(db.Boolean, nullable=False, default=True)
-    role_id = db.Column(db.String(20), db.ForeignKey("role.id"), nullable=False)  # 'user', 'admin', etc.
+    role = db.Column(db.String(20), nullable=False, default="customer") # 'user', 'admin', etc.
     plan=db.relationship("Plan",back_populates="users")
-    role=db.relationship("Role",back_populates="users")
-
-    def set_password(self, password):
-        self.password = generate_password_hash(password)
+  
+    __table_args__ = (
+        db.CheckConstraint(
+            role.in_(['admin', 'owner', 'manager', 'employee', 'customer']),
+            name='valid_roles'
+        ),
+    )
+    
 
     def check_password(self, password):
         return check_password_hash(self.password, password)
@@ -33,7 +37,7 @@ class User(db.Model):
             "email": self.email,
             "is_active": self.is_active,
             "plan_id": self.plan_id,
-            "role_id": self.role_id
+            "role": self.role
         }
 
 class Plan(db.Model):
@@ -52,19 +56,6 @@ class Plan(db.Model):
             "users": [user.serialize()for user in self.users]
         }
     
-class Role(db.Model):
-    id = db.Column(db.String(50), primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.String(250), nullable=False)
-    users = db.relationship("User", back_populates="role")
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "description": self.description,
-            "users": [user.serialize()for user in self.users]
-        }
 # ---------------------
 # Product Model
 # ---------------------
@@ -80,6 +71,7 @@ class Product(db.Model):
     unit_price = db.Column(db.Numeric(8, 2), nullable=False)
     supplier = db.Column(db.String(100), nullable=False)
     batch_number = db.Column(db.String(50), nullable=False)
+    medical_benefits = db.Column(db.Text, nullable=True)
     test_results = db.Column(db.Text, nullable=True)
 
     def __repr__(self):
@@ -151,6 +143,37 @@ class Order(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+    
+    #PRESCRIPTION MANAGEMENT
+
+class Prescription(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patient.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    dosage = db.Column(db.String(50), nullable=False)
+    frequency = db.Column(db.String(50), nullable=False)
+    prescribed_date = db.Column(db.Date, default=datetime.utcnow)
+
+    patient = db.relationship('Patient', backref='prescriptions')
+    product = db.relationship('Product', backref='prescriptions')
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "patient_id": self.patient_id,
+            "product_id": self.product_id,
+            "dosage": self.dosage,
+            "frequency": self.frequency,
+            "prescribed_date": self.prescribed_date.isoformat(),
+        }
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.String(100), unique=True, nullable=False)
+    customer_name = db.Column(db.String(100), nullable=False)
+    payment_method = db.Column(db.String(50))
+    amount = db.Column(db.Float, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ---------------------
 # Customer Model
@@ -178,6 +201,30 @@ class Customer(db.Model):
             "membership_level": self.membership_level,
             "verification_status": self.verification_status,
             "preferences": self.preferences,
+        }
+    
+class Patient(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(50), nullable=False)
+    last_name = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(20), nullable=False)
+    medical_card_number = db.Column(db.String(50), unique=True, nullable=False)
+    expiration_date = db.Column(db.Date, nullable=False)
+    physician_name = db.Column(db.String(100), nullable=False)
+    conditions = db.Column(db.Text, nullable=True)
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "email": self.email,
+            "phone": self.phone,
+            "medical_card_number": self.medical_card_number,
+            "expiration_date": self.expiration_date.isoformat(),
+            "physician_name": self.physician_name,
+            "conditions": self.conditions,
         }
 
 # ---------------------
@@ -250,4 +297,18 @@ class Invoice(db.Model):
             "due_date": self.due_date,
             "total_amount": float(self.total_amount),
             "status": self.status,
+        }
+    
+class Education(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    category = db.Column(db.String(50), nullable=False)  # e.g., "Dosing", "Strains"
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "title": self.title,
+            "content": self.content,
+            "category": self.category,
         }
