@@ -1,15 +1,14 @@
 // src/Layout.js
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import "../../styles/navbar.css"
 import logo from "../../../../docs/assets/logo.jpg"
 
 const Navbar = () => {
-  const laoction = useLocation();
+  const navigate = useNavigate();
 
   const handleSignOut = () => {
-    // Clear user session (e.g., remove token from localStorage)
-    localStorage.removeItem('token');
+    sessionStorage.clear()
     navigate('/login'); // Redirect to login page
   };
 
@@ -32,18 +31,15 @@ const Navbar = () => {
                 <a className={`nav-link ${isActive('/') ? 'active' : ''}`} aria-current="page" href="/">Home</a>
               </li>
               <li className="nav-item">
-                <a className={`nav-link ${isActive('/register') ? 'active' : ''}`} href="/register">
+                <a className={`nav-link ${isActive('/signup') ? 'active' : ''}`} href="/signup">
                   Register
                 </a>
               </li>
               <li className="nav-item">
-                <a className={`nav-link ${isActive('/login') ? 'active' : ''}`} href="#">Login</a>
+                <a className={`nav-link ${isActive('/login') ? 'active' : ''}`} href="/login">Login</a>
               </li>
               <li className="nav-item">
-                <a className={`nav-link ${isActive('/logout') ? 'active' : ''}`} href="#" onClick={(e) => {
-                    e.preventDefault();
-                    handleSignOut();
-                  }}>Logout</a>
+                <a className="nav-link" href="/" onClick={handleSignOut}>Logout</a>
               </li>
               <li className="nav-item dropdown">
                 <a className={`nav-link dropdown-toggle ${isActive('/change-password') || isActive('/profile') ? 'active' : ''}`} href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

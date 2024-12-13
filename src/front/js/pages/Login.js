@@ -12,8 +12,12 @@ const Login = () => {
             const data = await login(email, password);
     
             if (data.success) {
-                alert("Login successful! Please log in.");
-                navigate("/"); // Redirect to the login page
+                alert("Login successful! ");
+                // navigate("/"); // Redirect to the login page
+                console.log("data from login", data)
+                sessionStorage.setItem("token", data.data.access_token)
+                sessionStorage.setItem("currentUser", JSON.stringify(data.data.user))
+                
             } else {
                 // const errorMessage=data.data?.message || data.error || "unknown error ocurred";
                 console.log("login failed message", data)
